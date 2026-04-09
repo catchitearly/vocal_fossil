@@ -20,6 +20,11 @@ function setup() {
 }
 
 function toggleMic() {
+  async function toggleMic() {
+  // Add this line to wake up the audio engine
+  if (getAudioContext().state !== 'running') {
+    await getAudioContext().resume();
+  }
   if (!isRecording) {
     // Reset Canvas and pick a random theme
     background(10);
