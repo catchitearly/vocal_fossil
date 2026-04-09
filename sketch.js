@@ -1,7 +1,7 @@
 let mic, fft;
 let particles = [];
 let isRecording = false;
-let currentTheme = 0; // 0: Flow, 1: Cymatic, 2: Voronoi, 3: Fractal
+let currentTheme = 0; 
 const THEME_NAMES = ["Organic Flow", "Cymatic Resonance", "Geometric Crystal", "Neural Fractal"];
 
 function setup() {
@@ -19,19 +19,16 @@ function setup() {
   select('#shareBtn').mousePressed(shareArt);
 }
 
-function toggleMic() {
-  async function toggleMic() {
-  // Add this line to wake up the audio engine
+async function toggleMic() {
   if (getAudioContext().state !== 'running') {
     await getAudioContext().resume();
   }
+
   if (!isRecording) {
-    // Reset Canvas and pick a random theme
     background(10);
     particles = [];
     currentTheme = floor(random(4));
     select('#themeDisplay').html(`Style: ${THEME_NAMES[currentTheme]}`);
-    
     mic.start();
     isRecording = true;
     select('#startBtn').html('Stop & Finalize');
@@ -54,19 +51,20 @@ function draw() {
   let mid = fft.getEnergy("mid");
 
   if (isRecording && vol > 0.005) {
-    if (currentTheme === 0) { // FLOW FIELD
+    push(); // Protect coordinate system
+    if (currentTheme === 0) { 
       for (let i = 0; i < 5; i++) particles.push(new FlowParticle(bass, treble));
-    } else if (currentTheme === 1) { // CYMATIC
+    } else if (currentTheme === 1) { 
       drawCymatic(bass, mid, treble);
-    } else if (currentTheme === 2) { // VORONOI/GEOMETRIC
+    } else if (currentTheme === 2) { 
       drawGeometric(vol, bass, treble);
-    } else if (currentTheme === 3) { // FRACTAL
+    } else if (currentTheme === 3) { 
       translate(width / 2, height);
-      drawFractal(100, vol, treble);
+      drawFractal(height / 4, vol, treble);
     }
+    pop();
   }
 
-  // Update particles for the Flow theme
   if (currentTheme === 0) {
     for (let i = particles.length - 1; i >= 0; i--) {
       particles[i].update();
@@ -76,7 +74,6 @@ function draw() {
   }
 }
 
-// --- THEME 0: FLOW PARTICLE ---
 class FlowParticle {
   constructor(bass, treble) {
     this.pos = createVector(random(width), random(height));
@@ -98,7 +95,6 @@ class FlowParticle {
   finished() { return this.alpha < 0; }
 }
 
-// --- THEME 1: CYMATIC ---
 function drawCymatic(b, m, t) {
   noFill();
   stroke(map(m, 0, 255, 0, 100), 70, 100, 10);
@@ -106,7 +102,6 @@ function drawCymatic(b, m, t) {
   ellipse(width / 2, height / 2, r, r * (t / 128));
 }
 
-// --- THEME 2: GEOMETRIC ---
 function drawGeometric(v, b, t) {
   stroke(map(t, 0, 255, 40, 80), 80, 100, 20);
   let x = random(width);
@@ -115,7 +110,6 @@ function drawGeometric(v, b, t) {
   rect(x, y, sz, sz);
 }
 
-// --- THEME 3: FRACTAL ---
 function drawFractal(len, v, t) {
   stroke(map(t, 0, 255, 150, 250), 80, 100, 30);
   line(0, 0, 0, -len);
@@ -132,7 +126,6 @@ function drawFractal(len, v, t) {
   }
 }
 
-// --- SHARE LOGIC ---
 async function shareArt() {
   const canvas = document.getElementById('defaultCanvas0');
   const dataUrl = canvas.toDataURL('image/png');
