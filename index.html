@@ -11,11 +11,14 @@
 <body>
     <div id="controls">
         <h1>Vocal Magic</h1>
-        <p id="themeDisplay">Tap to Begin</p>
-        <button id="startBtn">Start Recording</button>
+        <p id="themeDisplay">Press & Hold to Create</p>
+        <div id="progressContainer" style="width:100%; height:4px; background:#eee; margin-bottom:15px; border-radius:2px; display:none;">
+            <div id="progressBar" style="width:0%; height:100%; background:linear-gradient(90deg, #ff7eb3, #845ef7); border-radius:2px;"></div>
+        </div>
+        <button id="startBtn">HOLD TO RECORD</button>
         <div class="btn-group" style="margin-top:10px;">
-            <button id="shareBtn" style="display:none;">Share</button>
-            <button id="saveBtn">Save</button>
+            <button id="shareBtn" style="display:none;">Share Art</button>
+            <button id="saveBtn">Save Print</button>
         </div>
     </div>
     <script src="sketch.js"></script>
