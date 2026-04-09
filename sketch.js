@@ -2,12 +2,11 @@ let mic, fft;
 let particles = [];
 let isRecording = false;
 let currentTheme = 0; 
-const THEME_NAMES = ["Organic Flow", "Cymatic Resonance", "Geometric Crystal", "Neural Fractal"];
+const THEME_NAMES = ["Cotton Candy Flow", "Crystal Echo", "Prism Mesh", "Magic Willow"];
 
 function setup() {
-  let canvas = createCanvas(windowWidth, windowHeight);
-  canvas.id('defaultCanvas0');
-  background(10);
+  createCanvas(windowWidth, windowHeight);
+  background(248, 249, 250); // Light Theme Background
   colorMode(HSB, 360, 100, 100, 100);
 
   mic = new p5.AudioIn();
@@ -15,8 +14,14 @@ function setup() {
   fft.setInput(mic);
 
   select('#startBtn').mousePressed(toggleMic);
-  select('#saveBtn').mousePressed(() => saveCanvas('vocal_fossil_art', 'png'));
+  select('#saveBtn').mousePressed(() => saveCanvas('vocal_magic_art', 'png'));
   select('#shareBtn').mousePressed(shareArt);
+}
+
+// Ensure canvas resizes with the device
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  background(248, 249, 250);
 }
 
 async function toggleMic() {
@@ -25,18 +30,18 @@ async function toggleMic() {
   }
 
   if (!isRecording) {
-    background(10);
+    background(248, 249, 250);
     particles = [];
     currentTheme = floor(random(4));
-    select('#themeDisplay').html(`Style: ${THEME_NAMES[currentTheme]}`);
+    select('#themeDisplay').html(THEME_NAMES[currentTheme]);
     mic.start();
     isRecording = true;
-    select('#startBtn').html('Stop & Finalize');
+    select('#startBtn').html('Stop & Finish');
     select('#shareBtn').hide();
   } else {
     mic.stop();
     isRecording = false;
-    select('#startBtn').html('Start New Recording');
+    select('#startBtn').html('Create More Magic');
     select('#shareBtn').show();
   }
 }
@@ -44,23 +49,23 @@ async function toggleMic() {
 function draw() {
   if (!isRecording && particles.length === 0) return;
 
-  let spectrum = fft.analyze();
   let vol = mic.getLevel();
   let bass = fft.getEnergy("bass");
   let treble = fft.getEnergy("treble");
   let mid = fft.getEnergy("mid");
+  fft.analyze();
 
   if (isRecording && vol > 0.005) {
-    push(); // Protect coordinate system
+    push();
     if (currentTheme === 0) { 
-      for (let i = 0; i < 5; i++) particles.push(new FlowParticle(bass, treble));
+        for (let i = 0; i < 3; i++) particles.push(new FlowParticle(bass, treble));
     } else if (currentTheme === 1) { 
-      drawCymatic(bass, mid, treble);
+        drawCymatic(bass, mid, treble);
     } else if (currentTheme === 2) { 
-      drawGeometric(vol, bass, treble);
+        drawGeometric(vol, bass, treble);
     } else if (currentTheme === 3) { 
-      translate(width / 2, height);
-      drawFractal(height / 4, vol, treble);
+        translate(width / 2, height * 0.8);
+        drawFractal(height / 5, vol, treble);
     }
     pop();
   }
@@ -79,16 +84,18 @@ class FlowParticle {
     this.pos = createVector(random(width), random(height));
     this.prevPos = this.pos.copy();
     this.vel = p5.Vector.fromAngle(random(TWO_PI));
-    this.hue = map(treble, 0, 255, 180, 320);
-    this.speed = map(bass, 0, 255, 2, 6);
-    this.alpha = 255;
+    // Unicorn Palette: Pinks, Purples, Teals
+    this.hue = random([330, 280, 190]); 
+    this.speed = map(bass, 0, 255, 1, 4);
+    this.alpha = 200;
   }
   update() {
     this.pos.add(this.vel);
-    this.alpha -= 1.5;
+    this.alpha -= 0.8;
   }
   show() {
-    stroke(this.hue, 80, 100, this.alpha / 5);
+    stroke(this.hue, 60, 90, this.alpha / 10);
+    strokeWeight(2);
     line(this.pos.x, this.pos.y, this.prevPos.x, this.prevPos.y);
     this.prevPos = this.pos.copy();
   }
@@ -97,48 +104,46 @@ class FlowParticle {
 
 function drawCymatic(b, m, t) {
   noFill();
-  stroke(map(m, 0, 255, 0, 100), 70, 100, 10);
-  let r = map(b, 0, 255, 50, height/2);
-  ellipse(width / 2, height / 2, r, r * (t / 128));
+  stroke(map(t, 0, 255, 280, 350), 50, 90, 15);
+  let r = map(b, 0, 255, 10, height/1.5);
+  ellipse(width / 2, height / 2, r, r);
 }
 
 function drawGeometric(v, b, t) {
-  stroke(map(t, 0, 255, 40, 80), 80, 100, 20);
+  noFill();
+  stroke(map(b, 0, 255, 180, 240), 40, 90, 20);
   let x = random(width);
   let y = random(height);
-  let sz = v * 500;
-  rect(x, y, sz, sz);
+  let sz = v * 400;
+  rect(x, y, sz, sz, 10);
 }
 
 function drawFractal(len, v, t) {
-  stroke(map(t, 0, 255, 150, 250), 80, 100, 30);
+  stroke(map(t, 0, 255, 300, 360), 50, 90, 40);
+  strokeWeight(2);
   line(0, 0, 0, -len);
   translate(0, -len);
-  if (len > 10) {
+  if (len > 20) {
     push();
-    rotate(PI / 4 * v);
-    drawFractal(len * 0.7, v, t);
-    pop();
-    push();
-    rotate(-PI / 4 * v);
+    rotate(PI / 6 * v * 10);
     drawFractal(len * 0.7, v, t);
     pop();
   }
 }
 
 async function shareArt() {
-  const canvas = document.getElementById('defaultCanvas0');
+  const canvas = document.querySelector('canvas');
   const dataUrl = canvas.toDataURL('image/png');
   const blob = await (await fetch(dataUrl)).blob();
-  const file = new File([blob], 'vocal_art.png', { type: 'image/png' });
+  const file = new File([blob], 'vocal_magic.png', { type: 'image/png' });
 
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     await navigator.share({
       files: [file],
-      title: 'My Vocal Fossil',
-      text: 'Captured my voice into this unique artwork.'
+      title: 'Vocal Magic Art',
+      text: 'Look at the art my voice created! ✨'
     });
   } else {
-    alert("Share not supported. Use Download!");
+    alert("Share unsupported. Try the Save button!");
   }
 }
